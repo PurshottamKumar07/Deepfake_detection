@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -218,3 +219,47 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+=======
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Data (raw datasets should never be committed)
+data/raw/
+data/processed/
+
+# Model weights (large binary files)
+models/checkpoints/
+models/*.pth
+models/*.pt
+models/*.h5
+models/*.ckpt
+
+# Results and logs (generated outputs)
+results/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Editor / IDE
+.vscode/settings.json
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files (may contain secrets)
+.env
+*.env.local
+
+# uv / pip lock artifacts
+# uv.lock is intentionally COMMITTED for reproducibility — do not gitignore it
+>>>>>>> 85f0b1d (Inital Push)

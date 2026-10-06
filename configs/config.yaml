@@ -1,0 +1,222 @@
+# =============================================================================
+# configs/config.yaml
+# =============================================================================
+# Central configuration for the AI-Powered Digital Media Forensics
+# and Deepfake Detection System.
+#
+# HOW TO USE:
+#   Local (VS Code):
+#     Set DATA_ROOT here, or override via env var:
+#       export DATA_ROOT=/path/to/your/dataset
+#
+#   Google Colab:
+#     At the top of your notebook, BEFORE importing any project modules:
+#       import os
+#       os.environ["DATA_ROOT"] = "/content/drive/MyDrive/deepfake_dataset"
+#
+# The DATA_ROOT env variable always takes priority over the value below.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Dataset paths
+# ---------------------------------------------------------------------------
+data:
+  # Root directory containing the raw dataset.
+  # Set to null to force reading from the DATA_ROOT environment variable.
+  # Example local path (Windows):  C:/Users/Shubham/data/faceforensics
+  # Example Colab path:            /content/drive/MyDrive/deepfake_dataset
+  data_root: null
+
+  # Sub-paths relative to data_root — adjust once dataset structure is known
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  splits_dir: "data/splits"
+  manifest_path: "data/manifest.csv"
+
+  # Dataset name tag written to manifest
+  dataset_name: "faceforensics_plus_plus"
+
+  # Modality of this dataset (image | video | audio | mixed)
+  modality: "image"
+
+  # Classes that map to label=real
+  # Confirmed from FaceForensics++ C23 Kaggle dataset
+  real_classes: ["Original"]
+
+  # Classes that map to label=fake
+  # Confirmed from FaceForensics++ C23 Kaggle dataset
+  fake_classes: ["Deepfakes", "Face2Face", "FaceShifter", "FaceSwap", "NeuralTextures"]
+
+# ---------------------------------------------------------------------------
+# Image settings
+# ---------------------------------------------------------------------------
+image:
+  # Target input size for Xception (height, width)
+  input_size: [299, 299]
+
+  # Normalization: ImageNet mean/std for pretrained Xception
+  normalize_mean: [0.485, 0.456, 0.406]
+  normalize_std:  [0.229, 0.224, 0.225]
+
+  # Whether to attempt face detection/cropping before resizing
+  use_face_crop: true
+
+  # Face crop padding factor (fraction of face bbox)
+  face_crop_padding: 0.3
+
+  # Supported image extensions (lowercase)
+  supported_extensions: [".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tiff"]
+
+# ---------------------------------------------------------------------------
+# Video settings
+# ---------------------------------------------------------------------------
+video:
+  # Number of frames to uniformly sample from each video
+  frames_per_video: 20
+
+  # Whether to detect/crop faces in video frames
+  use_face_crop: true
+
+  # Same as image: input size for frame-level model
+  frame_input_size: [299, 299]
+
+  # Supported video extensions (lowercase)
+  supported_extensions: [".mp4", ".avi", ".mov", ".mkv", ".webm", ".flv"]
+
+  # Strategy when no face is detected in a frame
+  # Options: skip | use_full_frame
+  no_face_strategy: "skip"
+
+# ---------------------------------------------------------------------------
+# Audio settings
+# ---------------------------------------------------------------------------
+audio:
+  # Target sample rate (Hz) for all audio
+  sample_rate: 16000
+
+  # Convert to mono before processing
+  mono: true
+
+  # Segment length in seconds (for fixed-length model input)
+  segment_length_sec: 3.0
+
+  # Hop length between segments (in seconds); 0 = non-overlapping
+  segment_hop_sec: 0.0
+
+  # Mel spectrogram settings
+  mel:
+    n_fft: 1024
+    hop_length: 512
+    n_mels: 128
+    fmin: 0
+    fmax: 8000
+
+  # MFCC settings (for traditional ML baseline)
+  mfcc:
+    n_mfcc: 40
+    n_fft: 1024
+    hop_length: 512
+
+  # Supported audio extensions (lowercase)
+  supported_extensions: [".wav", ".flac", ".mp3", ".ogg", ".m4a"]
+
+# ---------------------------------------------------------------------------
+# Split settings
+# ---------------------------------------------------------------------------
+splits:
+  # Fractions must sum to 1.0
+  train_ratio: 0.70
+  val_ratio:   0.15
+  test_ratio:  0.15
+
+  # Level at which to perform the split (source_id | file)
+  # WARNING: splitting at 'file' level risks train/test leakage for video frames.
+  # Use 'source_id' whenever source IDs are available.
+  split_level: "source_id"
+
+  # Fixed random seed for reproducibility
+  random_seed: 42
+
+# ---------------------------------------------------------------------------
+# Training settings
+# ---------------------------------------------------------------------------
+training:
+  # Number of epochs
+  epochs: 30
+
+  # Batch size
+  batch_size: 32
+
+  # Initial learning rate
+  learning_rate: 0.0001
+
+  # Optimizer: adam | sgd | adamw
+  optimizer: "adam"
+
+  # Whether to freeze the backbone during initial training
+  freeze_backbone: true
+
+  # Epoch at which to unfreeze the backbone for fine-tuning (null = never)
+  unfreeze_epoch: null
+
+  # Dropout rate for the classification head
+  dropout_rate: 0.5
+
+  # Number of dataloader worker processes (0 = main process only)
+  num_workers: 4
+
+  # Whether to use mixed precision training (GPU only)
+  use_amp: true
+
+  # Gradient clipping max norm (null = disabled)
+  grad_clip: 1.0
+
+# ---------------------------------------------------------------------------
+# Checkpointing
+# ---------------------------------------------------------------------------
+checkpointing:
+  # Directory to save model checkpoints
+  checkpoint_dir: "models/checkpoints"
+
+  # Save best checkpoint based on this metric
+  monitor_metric: "val_auc"
+
+  # Direction: max or min
+  monitor_mode: "max"
+
+  # Whether to save the latest checkpoint every epoch (enables resume)
+  save_latest: true
+
+# ---------------------------------------------------------------------------
+# Augmentation settings (applied during training only)
+# ---------------------------------------------------------------------------
+augmentation:
+  enabled: false   # Set to true in experiment configs that use augmentation
+  horizontal_flip: true
+  rotation_degrees: 10
+  color_jitter:
+    brightness: 0.2
+    contrast: 0.2
+    saturation: 0.2
+    hue: 0.05
+  random_erasing_prob: 0.1
+
+# ---------------------------------------------------------------------------
+# Output directories
+# ---------------------------------------------------------------------------
+outputs:
+  results_dir: "results"
+  dataset_inspection_dir: "results/dataset_inspection"
+  metrics_dir: "results/metrics"
+  predictions_dir: "results/predictions"
+  failure_analysis_dir: "results/failure_analysis"
+  gradcam_dir: "results/gradcam"
+  forensic_reports_dir: "results/forensic_reports"
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+logging:
+  level: "INFO"   # DEBUG | INFO | WARNING | ERROR
+  log_dir: "results/logs"
+  log_to_file: true
