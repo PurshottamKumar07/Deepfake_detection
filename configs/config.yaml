@@ -23,38 +23,31 @@
 data:
   # Root directory containing the raw dataset.
   # Set to null to force reading from the DATA_ROOT environment variable.
-  # Example local path (Windows):  C:/Users/Shubham/data/faceforensics
-  # Example Colab path:            /content/drive/MyDrive/deepfake_dataset
-  # Set to the extracted-frames directory (output of extract_frames.py)
-  # Override with DATA_ROOT env var in Colab/different machines.
-  # Local: D:/Datasets/FF++/frames
-  data_root: "D:/Datasets/FF++/frames"
+  # Local (Windows) — frames extracted to:
+  data_root: "D:/projects/Dataset_fp/FF++/frames"
 
   # Sub-paths relative to data_root — adjust once dataset structure is known
   raw_dir: "data/raw"
   processed_dir: "data/processed"
-  splits_dir: "data/splits"
+
+  # IMPORTANT: splits are stored alongside the frames (absolute path works with Python Path)
+  splits_dir: "D:/projects/Dataset_fp/FF++/frames/splits"
   manifest_path: "data/manifest.csv"
 
   # Dataset name tag written to manifest
   dataset_name: "faceforensics_plus_plus"
 
-  # Modality: frames extracted from videos → treated as images
+  # Modality of this dataset (image | video | audio | mixed)
   modality: "image"
 
-  # Binary classification: real/ and fake/ directories under data_root
-  # (produced by src.data.extract_frames)
+  # Classes that map to label=real
+  # Confirmed from FaceForensics++ C23 Kaggle dataset
   real_classes: ["real"]
+
+  # Classes that map to label=fake
+  # Confirmed from FaceForensics++ C23 Kaggle dataset — flat fake/ folder
+  # All manipulation types are merged into one 'fake' label for binary classification
   fake_classes: ["fake"]
-
-  # Path to class weights JSON (for handling 1:6 real:fake imbalance)
-  class_weights_path: "data/class_weights.json"
-
-  # Number of frames extracted per video (for reference)
-  frames_per_video: 10
-
-  # Original FF++ video root (used only by extract_frames.py)
-  video_root: "D:/Datasets/FF++/FaceForensics++_C23"
 
 # ---------------------------------------------------------------------------
 # Image settings
@@ -151,19 +144,19 @@ splits:
 # ---------------------------------------------------------------------------
 training:
   # Number of epochs
-  epochs: 30
+  epochs: 10
 
   # Batch size
   batch_size: 32
 
   # Initial learning rate
-  learning_rate: 0.0001
+  learning_rate: 0.00001
 
   # Optimizer: adam | sgd | adamw
   optimizer: "adam"
 
   # Whether to freeze the backbone during initial training
-  freeze_backbone: true
+  freeze_backbone: false
 
   # Epoch at which to unfreeze the backbone for fine-tuning (null = never)
   unfreeze_epoch: null
@@ -171,14 +164,20 @@ training:
   # Dropout rate for the classification head
   dropout_rate: 0.5
 
-  # Number of dataloader worker processes (0 = main process only)
-  num_workers: 4
-
   # Whether to use mixed precision training (GPU only)
   use_amp: true
 
   # Gradient clipping max norm (null = disabled)
   grad_clip: 1.0
+
+  # Class imbalance correction via BCEWithLogitsLoss pos_weight
+  # pos_weight = n_real / n_fake — computed automatically from training labels
+  # Set to false only if you use a balanced sampler instead
+  use_class_weights: true
+
+  # Number of dataloader worker processes
+  # Use 0 on Windows to avoid multiprocessing issues
+  num_workers: 2
 
 # ---------------------------------------------------------------------------
 # Checkpointing
@@ -200,7 +199,7 @@ checkpointing:
 # Augmentation settings (applied during training only)
 # ---------------------------------------------------------------------------
 augmentation:
-  enabled: false   # Set to true in experiment configs that use augmentation
+  enabled: true    # Enabled for fine-tuning
   horizontal_flip: true
   rotation_degrees: 10
   color_jitter:

@@ -157,10 +157,10 @@ def evaluate_model(
     threshold_info = calibrate_threshold(
         val_results["y_true"],
         val_results["y_scores"],
-        metric="f1",
+        metric="youden",
     )
     best_threshold = threshold_info["best_threshold"]
-    logger.info("Calibrated threshold: %.3f (F1=%.4f)", best_threshold, threshold_info["best_score"])
+    logger.info("Calibrated threshold: %.3f (Youden's J=%.4f)", best_threshold, threshold_info["best_score"])
 
     # --- Step 2: Test inference with calibrated threshold ---
     logger.info("Running inference on test set...")
