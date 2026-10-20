@@ -169,12 +169,10 @@ async function checkBackendHealth() {
       return;
     }
   } catch (err) {
-    // If running on standalone port or file://, check port 8000
-    try {
-      const res = await fetch('http://127.0.0.1:8000/health');
+      const res = await fetch(window.location.protocol.startsWith('http') ? '/health' : 'http://127.0.0.1:8080/health');
       if (res.ok) {
         state.backendOnline = true;
-        if (statusEl) statusEl.textContent = 'FastAPI Engine Active (8000)';
+        if (statusEl) statusEl.textContent = 'FastAPI Engine Active';
         return;
       }
     } catch (e) {
@@ -479,7 +477,7 @@ async function startScanningProcess(file, isVideo) {
       const formData = new FormData();
       formData.append('files', file);
 
-      const endpoint = window.location.port === '8000' ? '/detect' : 'http://127.0.0.1:8000/detect';
+      const endpoint = window.location.protocol.startsWith('http') ? '/detect' : 'http://127.0.0.1:8080/detect';
       const response = await fetch(endpoint, {
         method: 'POST',
         body: formData,
