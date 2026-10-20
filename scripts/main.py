@@ -52,15 +52,20 @@ def _init_pipeline():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Load threshold from threshold.json if available
-    threshold_file = project_root / "results" / "metrics" / "default" / "threshold.json"
+    # Load threshold from finetuned_best/threshold.json if available
+    threshold_file = project_root / "results" / "metrics" / "finetuned_best" / "threshold.json"
+    if not threshold_file.exists():
+        threshold_file = project_root / "results" / "metrics" / "default" / "threshold.json"
+
     if threshold_file.exists():
         try:
             import json
             with open(threshold_file, "r") as f:
-                _threshold = float(json.load(f).get("best_threshold", 0.50))
+                _threshold = float(json.load(f).get("best_threshold", 0.74))
         except Exception:
-            _threshold = 0.50
+            _threshold = 0.74
+    else:
+        _threshold = 0.74
 
     # Build image model
     model = build_xception_model(_config)

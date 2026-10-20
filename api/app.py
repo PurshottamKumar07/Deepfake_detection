@@ -105,15 +105,17 @@ async def detect(files: list[UploadFile] = File(...)) -> JSONResponse:
         # Run the full detection pipeline
         results = process_upload(file_list)
 
-    # Strip frame_results from video responses (can be very large)
+    # Normalize and trim frame_results from video responses
     for r in results:
         if "frame_results" in r:
             frame_summary = []
             for fr in r.get("frame_results", []):
                 frame_summary.append({
                     "frame": fr.get("frame"),
+                    "timestamp": fr.get("timestamp", f"0:{int(fr.get('frame', 0)):02d}"),
                     "is_deepfake": fr.get("is_deepfake"),
                     "confidence": fr.get("confidence"),
+                    "fake_probability": fr.get("fake_probability"),
                     "label": fr.get("label"),
                 })
             r["frame_results"] = frame_summary
