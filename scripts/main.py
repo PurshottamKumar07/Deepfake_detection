@@ -53,19 +53,15 @@ def _init_pipeline():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Load threshold from finetuned_best/threshold.json if available
+    # NOTE: Scientific Youden threshold is 0.74 (used in evaluation report / paper)
+    # For API demo, we use 0.90 to reduce false positives on out-of-distribution
+    # personal photos (model was trained on FaceForensics++ video frames, not camera photos)
     threshold_file = project_root / "results" / "metrics" / "finetuned_best" / "threshold.json"
     if not threshold_file.exists():
         threshold_file = project_root / "results" / "metrics" / "default" / "threshold.json"
 
-    if threshold_file.exists():
-        try:
-            import json
-            with open(threshold_file, "r") as f:
-                _threshold = float(json.load(f).get("best_threshold", 0.74))
-        except Exception:
-            _threshold = 0.74
-    else:
-        _threshold = 0.74
+    # Demo-safe threshold (higher = fewer false positives on real personal photos)
+    _threshold = 0.90
 
     # Build image model
     model = build_xception_model(_config)
