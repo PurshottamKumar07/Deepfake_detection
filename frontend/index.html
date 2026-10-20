@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeepDetect — AI-Powered Deepfake Detection for Images and Videos</title>
+  <meta name="description" content="AI-Powered Digital Media Forensics and Deepfake Detection System. Detect manipulated images and videos with Grad-CAM heatmaps and forensic analysis.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Top Navigation (Visible on Home view) -->
+  <header class="top-nav" id="topNav">
+    <div class="nav-container">
+      <div class="brand-logo" onclick="navigateTo('home')">
+        <div class="shield-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L3 6V12C3 17.52 6.84 22.74 12 24C17.16 22.74 21 17.52 21 12V6L12 2Z" fill="#2563EB"/>
+            <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="brand-name">DeepDetect</span>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#home" class="nav-link active" data-page="home" onclick="navigateTo('home', event)">Home</a>
+        <a href="#detect" class="nav-link" data-page="detect" onclick="navigateTo('detect', event)">Detect</a>
+        <a href="#history" class="nav-link" data-page="history" onclick="navigateTo('history', event)">History</a>
+        <a href="#about" class="nav-link" data-page="about" onclick="navigateTo('about', event)">About</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="btn btn-dark" id="topGetStartedBtn" onclick="navigateTo('detect')">Get Started</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main App Shell (Contains Sidebar + Page Contents) -->
+  <div class="app-shell" id="appShell">
+    
+    <!-- Left Sidebar (Visible on Dashboard Views) -->
+    <aside class="sidebar" id="appSidebar">
+      <div class="sidebar-header" onclick="navigateTo('home')">
+        <div class="shield-icon-sm">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L3 6V12C3 17.52 6.84 22.74 12 24C17.16 22.74 21 17.52 21 12V6L12 2Z" fill="#2563EB"/>
+            <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="sidebar-brand-name">DeepDetect</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#home" class="sidebar-link" id="navSidebarHome" data-page="home" onclick="navigateTo('home', event)">
+          <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Home</span>
+        </a>
+
+        <a href="#detect" class="sidebar-link active" id="navSidebarDetect" data-page="detect" onclick="navigateTo('detect', event)">
+          <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <span>Detect Media</span>
+        </a>
+
+        <a href="#history" class="sidebar-link" id="navSidebarHistory" data-page="history" onclick="navigateTo('history', event)">
+          <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>History</span>
+        </a>
+
+        <a href="#about" class="sidebar-link" id="navSidebarAbout" data-page="about" onclick="navigateTo('about', event)">
+          <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>About</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-status-pill">
+          <span class="status-dot-pulse"></span>
+          <span class="status-text" id="apiStatusText">Engine Ready</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Container -->
+    <main class="main-content" id="mainContent">
+
+      <!-- ========================================== -->
+      <!-- VIEW 1: HOME / LANDING VIEW               -->
+      <!-- ========================================== -->
+      <section class="page-view" id="viewHome">
+        <div class="hero-section">
+          <div class="hero-content">
+            <h1 class="hero-title">AI-Powered<br>Deepfake Detection<br>for Images and Videos</h1>
+            <p class="hero-subtitle">
+              Analyze media files using state-of-the-art deep learning models. Detect manipulated content with visual explanations like Grad-CAM heatmaps.
+            </p>
+            <div class="hero-cta-group">
+              <button class="btn btn-dark btn-lg" id="heroTryDetectionBtn" onclick="navigateTo('detect')">
+                Try Detection
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+              <button class="btn btn-outline btn-lg" id="heroLearnMoreBtn" onclick="navigateTo('about')">Learn More</button>
+            </div>
+          </div>
+
+          <!-- Hero Split-Face Comparison Card -->
+          <div class="hero-visual">
+            <div class="split-face-card" id="splitFaceContainer">
+              <div class="split-image-wrapper">
+                <img src="assets/hero_split.jpg" alt="Deepfake comparison portrait" class="split-image-base" id="heroSplitImage">
+                <div class="split-overlay-layer" id="splitOverlayLayer">
+                  <div class="scan-grid-overlay"></div>
+                </div>
+                <div class="split-divider-line" id="splitDividerLine">
+                  <div class="split-divider-handle">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                      <path d="M8 7l-5 5 5 5V7zm8 0v10l5-5-5-5z"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Badges over split face -->
+              <div class="split-badge badge-real">
+                <span class="badge-dot dot-green"></span>
+                <span>Real</span>
+              </div>
+              <div class="split-badge badge-deepfake">
+                <span class="badge-dot dot-red"></span>
+                <span>Deepfake</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Feature Highlight Cards -->
+        <div class="features-row">
+          <div class="feature-card" onclick="openUploadTab('image')">
+            <div class="feature-icon-box icon-blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+            </div>
+            <div class="feature-card-body">
+              <h3 class="feature-title">Image Analysis</h3>
+              <p class="feature-desc">Detect manipulated or generated images</p>
+            </div>
+          </div>
+
+          <div class="feature-card" onclick="openUploadTab('video')">
+            <div class="feature-icon-box icon-blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            </div>
+            <div class="feature-card-body">
+              <h3 class="feature-title">Video Analysis</h3>
+              <p class="feature-desc">Analyze entire videos frame by frame</p>
+            </div>
+          </div>
+
+          <div class="feature-card" onclick="navigateTo('about')">
+            <div class="feature-icon-box icon-gradient">
+              <div class="gradcam-circle-icon"></div>
+            </div>
+            <div class="feature-card-body">
+              <h3 class="feature-title">Visual Explanations</h3>
+              <p class="feature-desc">Grad-CAM heatmaps to highlight suspicious regions</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 2: DETECT MEDIA (UPLOAD VIEW)        -->
+      <!-- ========================================== -->
+      <section class="page-view" id="viewDetect">
+        <div class="view-header">
+          <h2 class="view-title">Detect Manipulated Media</h2>
+          <p class="view-subtitle">Upload an image or video file to detect whether it is real or deepfake.</p>
+        </div>
+
+        <!-- Media Type Selector Tabs -->
+        <div class="media-tabs-bar">
+          <button class="media-tab-btn active" id="tabBtnImage" onclick="switchMediaTab('image')">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <span>Image</span>
+          </button>
+          <button class="media-tab-btn" id="tabBtnVideo" onclick="switchMediaTab('video')">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="6 4 20 12 6 20 6 4"></polygon>
+            </svg>
+            <span>Video</span>
+          </button>
+        </div>
+
+        <!-- Detection Grid: Dropzone + Tips Card -->
+        <div class="detect-layout-grid">
+          <!-- Main Upload Dropzone Card -->
+          <div class="dropzone-card" id="dropzoneCard">
+            <input type="file" id="mediaFileInput" class="file-input-hidden" accept="image/png, image/jpeg, image/jpg, image/webp">
+            
+            <div class="dropzone-body" id="dropzoneBody">
+              <div class="upload-icon-circle">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+
+              <h3 class="dropzone-prompt" id="dropzonePromptText">Drag and drop an image file here</h3>
+              <p class="dropzone-sub">or <span class="browse-link" onclick="triggerFileInput()">click to browse</span></p>
+              
+              <div class="dropzone-specs" id="dropzoneSpecsText">
+                Supported formats: JPG, PNG, JPEG, WEBP (Max 10MB)
+              </div>
+
+              <button class="btn btn-dark btn-md" id="chooseFileBtn" onclick="triggerFileInput()">Choose File</button>
+
+              <!-- Quick Demo Samples Selector -->
+              <div class="quick-demo-container">
+                <span class="quick-demo-label">⚡ Quick Demo Samples:</span>
+                <div class="demo-chips">
+                  <button type="button" class="demo-chip" onclick="loadPresetDemo('image_fake')">
+                    🖼️ Shah Rukh Khan (Deepfake)
+                  </button>
+                  <button type="button" class="demo-chip" onclick="loadPresetDemo('image_real')">
+                    📸 Authentic Portrait (Real)
+                  </button>
+                  <button type="button" class="demo-chip" onclick="loadPresetDemo('video_fake')">
+                    🎬 Video Scene (Deepfake)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips Card -->
+          <aside class="tips-card">
+            <div class="tips-header">
+              <span class="tips-icon">💡</span>
+              <h4 class="tips-title">Tips for best results</h4>
+            </div>
+            <ul class="tips-list">
+              <li>Use clear, high-quality media files.</li>
+              <li>For videos, shorter clips (≤ 2 minutes) are processed faster.</li>
+              <li>Supported formats: MP4, MOV, AVI, MKV (videos), JPG, PNG (images).</li>
+              <li>The system will provide a prediction with confidence score and Grad-CAM visualization.</li>
+            </ul>
+
+            <div class="tips-badge-footer">
+              <span class="tech-tag">Xception Backbone</span>
+              <span class="tech-tag">Grad-CAM v1.5</span>
+              <span class="tech-tag">Temporal Aggregator</span>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 3: IMAGE ANALYSIS RESULT             -->
+      <!-- ========================================== -->
+      <section class="page-view" id="viewImageResult">
+        <div class="result-header-row">
+          <h2 class="view-title">Image Analysis Result</h2>
+          <button class="btn-back-link" onclick="navigateTo('detect')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to Upload
+          </button>
+        </div>
+
+        <!-- 3-Column Top Grid: Uploaded Image | Predicted Result | Grad-CAM Heatmap -->
+        <div class="result-top-grid">
+          <!-- Card 1: Uploaded Image -->
+          <div class="result-card">
+            <h3 class="card-headline">Uploaded Image</h3>
+            <div class="media-preview-box">
+              <img id="imgResultOriginal" src="assets/sample_portrait.jpg" alt="Uploaded analysis image" class="result-media-fit">
+            </div>
+          </div>
+
+          <!-- Card 2: Predicted Result -->
+          <div class="result-card pred-result-card">
+            <h3 class="card-headline">Predicted Result</h3>
+            <div class="pred-body">
+              <div class="result-badge-pill badge-deepfake" id="imgResultBadge">
+                <span class="badge-dot dot-red" id="imgResultBadgeDot"></span>
+                <span id="imgResultBadgeText">Deepfake Detected</span>
+              </div>
+
+              <div class="confidence-large-number" id="imgResultConfidence">92.4%</div>
+              <div class="confidence-label">Confidence</div>
+
+              <!-- Animated progress bar -->
+              <div class="confidence-meter-track">
+                <div class="confidence-meter-fill fill-red" id="imgResultMeterFill" style="width: 92.4%;"></div>
+              </div>
+
+              <!-- Breakdown percentages -->
+              <div class="prediction-breakdown-row">
+                <div class="breakdown-col">
+                  <span class="bd-label">Real</span>
+                  <span class="bd-val" id="imgResultRealVal">7.6%</span>
+                </div>
+                <div class="breakdown-col text-right">
+                  <span class="bd-label">Deepfake</span>
+                  <span class="bd-val" id="imgResultFakeVal">92.4%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Grad-CAM Heatmap -->
+          <div class="result-card">
+            <div class="card-headline-row">
+              <h3 class="card-headline">Grad-CAM Heatmap</h3>
+              <div class="heatmap-mode-toggles">
+                <button type="button" class="btn-micro active" id="btnToggleOverlay" onclick="setHeatmapViewMode('overlay')">Overlay</button>
+                <button type="button" class="btn-micro" id="btnToggleHeatmapOnly" onclick="setHeatmapViewMode('heatmap')">Heatmap</button>
+                <button type="button" class="btn-micro" id="btnToggleOriginal" onclick="setHeatmapViewMode('original')">Raw</button>
+              </div>
+            </div>
+
+            <div class="heatmap-container-with-scale">
+              <div class="heatmap-canvas-wrapper" id="imgHeatmapWrapper">
+                <canvas id="imgGradCamCanvas" class="gradcam-canvas"></canvas>
+                <div class="heatmap-scan-indicator"></div>
+              </div>
+
+              <!-- Vertical High/Low Attention Bar -->
+              <div class="attention-scale-bar">
+                <span class="scale-label top-label">High<br>Attention</span>
+                <div class="scale-gradient-strip"></div>
+                <span class="scale-label bottom-label">Low<br>Attention</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Grid: Analysis Details + Key Observations -->
+        <div class="result-bottom-grid">
+          <!-- Analysis Details Card -->
+          <div class="result-card detail-collapsible-card">
+            <div class="collapsible-header" onclick="toggleDetailsCollapse('imgDetailsBody', 'imgDetailsIcon')">
+              <div class="title-with-chevron">
+                <svg id="imgDetailsIcon" class="chevron-icon rotate-open" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+                <h3 class="card-headline mb-0">Analysis Details</h3>
+              </div>
+            </div>
+            
+            <div class="detail-rows-container" id="imgDetailsBody">
+              <div class="detail-row">
+                <span class="dt-key">File Name</span>
+                <span class="dt-val font-mono" id="imgDetailFilename">sample_image.jpg</span>
+              </div>
+              <div class="detail-row">
+                <span class="dt-key">File Size</span>
+                <span class="dt-val" id="imgDetailSize">245 KB</span>
+              </div>
+              <div class="detail-row">
+                <span class="dt-key">Image Resolution</span>
+                <span class="dt-val" id="imgDetailResolution">512 × 512</span>
+              </div>
+              <div class="detail-row">
+                <span class="dt-key">Model Used</span>
+                <span class="dt-val badge-model" id="imgDetailModel">Xception (Fine-tuned)</span>
+              </div>
+              <div class="detail-row">
+                <span class="dt-key">Prediction Time</span>
+                <span class="dt-val" id="imgDetailTime">2.3 seconds</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Observations Card -->
+          <div class="result-card observations-card">
+            <div class="observations-header">
+              <div class="obs-icon-circle">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#2563EB" stroke-width="2.5">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+              </div>
+              <h3 class="card-headline mb-0">Key Observations</h3>
+            </div>
+
+            <ul class="observations-list" id="imgKeyObservationsList">
+              <li>Suspicious regions detected around eyes and mouth.</li>
+              <li>Inconsistent texture in facial skin.</li>
+              <li>Possible artifacts in high-attention areas.</li>
+            </ul>
+
+            <div class="card-bottom-actions">
+              <button class="btn btn-outline btn-sm" onclick="exportAnalysisReport('image')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export JSON Report
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 4: VIDEO ANALYSIS RESULT             -->
+      <!-- ========================================== -->
+      <section class="page-view" id="viewVideoResult">
+        <div class="result-header-row">
+          <h2 class="view-title">Video Analysis Result</h2>
+          <button class="btn-back-link" onclick="navigateTo('detect')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 19"></polyline>
+            </svg>
+            Back to Upload
+          </button>
+        </div>
+
+        <!-- 3-Column Top Grid: Video Player | Predicted Result | Grad-CAM (Current Frame) -->
+        <div class="result-top-grid">
+          <!-- Card 1: Video Player -->
+          <div class="result-card">
+            <h3 class="card-headline">Video Player</h3>
+            <div class="video-player-container" id="videoPlayerBox">
+              <video id="resultVideoElement" class="html5-video-player" playsinline preload="auto">
+                <source src="" type="video/mp4" id="videoSourceElement">
+                Your browser does not support the video tag.
+              </video>
+              
+              <!-- Video Fallback Simulated Canvas when no raw video is provided -->
+              <canvas id="simulatedVideoCanvas" class="simulated-video-canvas"></canvas>
+
+              <!-- Custom Dark Video Player Control Bar -->
+              <div class="custom-video-controls" id="customVideoControls">
+                <button type="button" class="video-ctrl-btn" id="videoPlayPauseBtn" onclick="toggleVideoPlayback()">
+                  <svg id="videoPlayIcon" viewBox="0 0 24 24" width="16" height="16" fill="white">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  <svg id="videoPauseIcon" class="hidden" viewBox="0 0 24 24" width="16" height="16" fill="white">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                  </svg>
+                </button>
+
+                <div class="video-time-display" id="videoTimeDisplay">0:12 / 0:30</div>
+
+                <div class="video-seeker-container" onclick="handleSeekerClick(event)">
+                  <div class="video-seeker-track">
+                    <div class="video-seeker-fill" id="videoSeekerFill" style="width: 40%;"></div>
+                  </div>
+                </div>
+
+                <button type="button" class="video-ctrl-btn" onclick="toggleVideoMute()">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Predicted Result -->
+          <div class="result-card pred-result-card">
+            <h3 class="card-headline">Predicted Result</h3>
+            <div class="pred-body">
+              <div class="result-badge-pill badge-deepfake" id="vidResultBadge">
+                <span class="badge-dot dot-red" id="vidResultBadgeDot"></span>
+                <span id="vidResultBadgeText">Deepfake Detected</span>
+              </div>
+
+              <div class="confidence-large-number" id="vidResultConfidence">87.6%</div>
+              <div class="confidence-label">Confidence</div>
+
+              <div class="confidence-meter-track">
+                <div class="confidence-meter-fill fill-red" id="vidResultMeterFill" style="width: 87.6%;"></div>
+              </div>
+
+              <div class="prediction-breakdown-row">
+                <div class="breakdown-col">
+                  <span class="bd-label">Real</span>
+                  <span class="bd-val" id="vidResultRealVal">12.4%</span>
+                </div>
+                <div class="breakdown-col text-right">
+                  <span class="bd-label">Deepfake</span>
+                  <span class="bd-val" id="vidResultFakeVal">87.6%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Grad-CAM (Current Frame) -->
+          <div class="result-card">
+            <h3 class="card-headline" id="vidGradCamHeadline">Grad-CAM (Current Frame)</h3>
+            <div class="heatmap-container-with-scale">
+              <div class="heatmap-canvas-wrapper" id="vidHeatmapWrapper">
+                <canvas id="vidGradCamCanvas" class="gradcam-canvas"></canvas>
+                <div class="current-frame-tag" id="vidCurrentFrameTag">Frame: 0:12</div>
+              </div>
+
+              <!-- Vertical High/Low Attention Bar -->
+              <div class="attention-scale-bar">
+                <span class="scale-label top-label">High<br>Attention</span>
+                <div class="scale-gradient-strip"></div>
+                <span class="scale-label bottom-label">Low<br>Attention</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Frame-wise Analysis Carousel Strip -->
+        <div class="frame-analysis-section">
+          <div class="frame-strip-header">
+            <h3 class="card-headline mb-0">Frame-wise Analysis</h3>
+            <span class="frame-strip-sub">Click any frame to jump time and inspect Grad-CAM attribution</span>
+          </div>
+
+          <div class="frame-carousel-wrapper">
+            <button type="button" class="carousel-arrow-btn prev-btn" onclick="scrollFrameStrip(-1)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+
+            <div class="frame-thumbnails-strip" id="frameThumbnailsStrip">
+              <!-- Dynamically populated or seeded with 0:00, 0:05, 0:10, 0:12 (active), 0:15, 0:20, 0:25 -->
+            </div>
+
+            <button type="button" class="carousel-arrow-btn next-btn" onclick="scrollFrameStrip(1)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bottom Grid: Video Details + Observations -->
+        <div class="result-bottom-grid">
+          <!-- Analysis Details Card -->
+          <div class="result-card detail-collapsible-card">
+            <div class="collapsible-header" onclick="toggleDetailsCollapse('vidDetailsBody', 'vidDetailsIcon')">
+              <div class="title-with-chevron">
+                <svg id="vidDetailsIcon" class="chevron-icon rotate-open" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+                <h3 class="card-headline mb-0">Analysis Details</h3>
+              </div>
+            </div>
+            
+            <div class="detail-rows-container" id="vidDetailsBody">
+              <div class="detail-row">
+                <span class="dt-key">File Name</span>
+                <span class="dt-val font-mono" id="vidDetailFilename">sample_video.mp4</span>
+              </div>
+              <div class="detail-row">
+                <span class="dt-key">Duration</span>
+                <span class="dt-val" id="vidDetailDuration">30 seconds</span>
+              </div>
+              <div class="detail-row">
+                <span class="dt-key">Total Frames</span>
+                <span class="dt-val" id="vidDetailTotalFrames">450</span>
+              </div>
+              <div class="detail-row">
+                <span class="dt-key">Model Used</span>
+                <span class="dt-val badge-model" id="vidDetailModel">Xception (Fine-tuned)</span>
+              </div>
+              <div class="detail-row">
+                <span class="dt-key">Prediction Time</span>
+                <span class="dt-val" id="vidDetailTime">28.4 seconds</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Observations Card -->
+          <div class="result-card observations-card">
+            <div class="observations-header">
+              <div class="obs-icon-circle">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#2563EB" stroke-width="2.5">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+              </div>
+              <h3 class="card-headline mb-0">Key Observations</h3>
+            </div>
+
+            <ul class="observations-list" id="vidKeyObservationsList">
+              <li>Inconsistent facial features across frames.</li>
+              <li>High attention around eyes, mouth and face boundaries.</li>
+              <li>Possible temporal artifacts detected.</li>
+            </ul>
+
+            <div class="card-bottom-actions">
+              <button class="btn btn-outline btn-sm" onclick="exportAnalysisReport('video')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export JSON Report
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 5: DETECTION HISTORY                 -->
+      <!-- ========================================== -->
+      <section class="page-view" id="viewHistory">
+        <div class="view-header-row">
+          <div>
+            <h2 class="view-title">Detection History</h2>
+            <p class="view-subtitle">View your past analysis results.</p>
+          </div>
+          <div class="history-controls">
+            <button class="btn btn-outline btn-sm" onclick="clearDetectionHistory()">Clear History</button>
+          </div>
+        </div>
+
+        <!-- History Filter Bar -->
+        <div class="history-filter-bar">
+          <div class="search-input-wrapper">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#64748B" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="historySearchInput" placeholder="Filter by filename..." oninput="filterHistoryTable()">
+          </div>
+
+          <div class="filter-pills">
+            <button class="filter-pill active" data-filter="all" onclick="setHistoryFilter('all')">All</button>
+            <button class="filter-pill" data-filter="video" onclick="setHistoryFilter('video')">Videos</button>
+            <button class="filter-pill" data-filter="image" onclick="setHistoryFilter('image')">Images</button>
+            <button class="filter-pill" data-filter="fake" onclick="setHistoryFilter('fake')">Deepfakes</button>
+            <button class="filter-pill" data-filter="real" onclick="setHistoryFilter('real')">Real</button>
+          </div>
+        </div>
+
+        <!-- History Data Table -->
+        <div class="table-card">
+          <table class="data-table" id="historyDataTable">
+            <thead>
+              <tr>
+                <th style="width: 50px;">#</th>
+                <th>File Name</th>
+                <th>Type</th>
+                <th>Result</th>
+                <th>Confidence</th>
+                <th>Date & Time</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- Dynamically rendered or pre-seeded rows -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 6: ABOUT DEEPDETECT                  -->
+      <!-- ========================================== -->
+      <section class="page-view" id="viewAbout">
+        <div class="about-hero-box">
+          <h2 class="view-title">About DeepDetect</h2>
+          <div class="about-tagline">AI-Powered Digital Media Forensics and Deepfake Detection System</div>
+          <p class="about-description">
+            This project uses deep learning models to detect manipulated or AI-generated images and videos.
+            It provides both a prediction score and visual explanations using Grad-CAM to highlight suspicious regions.
+          </p>
+        </div>
+
+        <!-- 4 Grid Feature Cards matching screenshot -->
+        <div class="about-features-grid">
+          <div class="about-feature-card">
+            <div class="about-card-icon icon-blue">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2563EB" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </div>
+            <div class="about-card-content">
+              <h4 class="about-card-title">State-of-the-art Models</h4>
+              <p class="about-card-desc">Fine-tuned Xception/CNN models for robust detection.</p>
+            </div>
+          </div>
+
+          <div class="about-feature-card">
+            <div class="about-card-icon icon-gradient">
+              <div class="gradcam-circle-icon-sm"></div>
+            </div>
+            <div class="about-card-content">
+              <h4 class="about-card-title">Grad-CAM Visualization</h4>
+              <p class="about-card-desc">Highlights regions that influence the prediction.</p>
+            </div>
+          </div>
+
+          <div class="about-feature-card">
+            <div class="about-card-icon icon-blue">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2563EB" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </div>
+            <div class="about-card-content">
+              <h4 class="about-card-title">Supports Images & Videos</h4>
+              <p class="about-card-desc">Analyze both images and entire video clips.</p>
+            </div>
+          </div>
+
+          <div class="about-feature-card">
+            <div class="about-card-icon icon-blue">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2563EB" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <div class="about-card-content">
+              <h4 class="about-card-title">User Friendly</h4>
+              <p class="about-card-desc">Simple and intuitive interface for easy analysis.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Technical Deep Dive & System Architecture -->
+        <div class="about-tech-details-card">
+          <h3 class="card-headline">System Architecture & Forensic Pipeline</h3>
+          <p class="tech-narrative">
+            DeepDetect combines multi-stage forensic analysis to counter facial swaps, neural face reenactments, and generative diffusion artifacts.
+          </p>
+
+          <div class="pipeline-steps-grid">
+            <div class="pipeline-box">
+              <div class="pipeline-step-num">01</div>
+              <h5>Ingestion & Validation</h5>
+              <p>Format checking, integrity validation, EXIF metadata extraction, and resolution normalization.</p>
+            </div>
+            <div class="pipeline-box">
+              <div class="pipeline-step-num">02</div>
+              <h5>Uniform Frame Sampling</h5>
+              <p>For video streams, temporal extraction samples key frames across scenes with face localization.</p>
+            </div>
+            <div class="pipeline-box">
+              <div class="pipeline-step-num">03</div>
+              <h5>Deep Feature Extraction</h5>
+              <p>Pretrained Xception convolutional backbone with modified classification head evaluates artifact patterns.</p>
+            </div>
+            <div class="pipeline-box">
+              <div class="pipeline-step-num">04</div>
+              <h5>Grad-CAM Attribution</h5>
+              <p>Computes gradient attributions of the last convolutional layer to highlight manipulated facial areas.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Processing / Scanning Overlay Modal -->
+  <div class="scanning-modal-backdrop" id="scanningModal">
+    <div class="scanning-modal-card">
+      <div class="scanning-radar-circle">
+        <div class="radar-sweep"></div>
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#2563EB" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="m4.93 4.93 4.24 4.24"></path>
+          <path d="m14.83 9.17 4.24-4.24"></path>
+          <path d="m14.83 14.83 4.24 4.24"></path>
+          <path d="m9.17 14.83-4.24 4.24"></path>
+          <circle cx="12" cy="12" r="2"></circle>
+        </svg>
+      </div>
+
+      <h3 class="scanning-title" id="scanningTitleText">Analyzing Media...</h3>
+      <p class="scanning-step" id="scanningStepText">Extracting convolutional feature representations...</p>
+
+      <div class="scanning-progress-bar">
+        <div class="scanning-progress-fill" id="scanningProgressFill"></div>
+      </div>
+
+      <div class="scanning-eta font-mono" id="scanningEtaText">Elapsed: 1.2s</div>
+    </div>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Load JavaScript -->
+  <script src="js/app.js"></script>
+</body>
+</html>

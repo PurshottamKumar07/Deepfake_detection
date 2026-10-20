@@ -267,7 +267,7 @@ def get_eval_transforms(config: dict[str, Any]):
     input_size = tuple(image_cfg.get("input_size", [299, 299]))
     mean = image_cfg.get("normalize_mean", [0.485, 0.456, 0.406])
     std = image_cfg.get("normalize_std", [0.229, 0.224, 0.225])
-
+    
     return transforms.Compose([
         transforms.Resize(input_size),
         transforms.ToTensor(),

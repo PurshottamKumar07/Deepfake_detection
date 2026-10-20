@@ -1,0 +1,16 @@
+{
+  "overall": {
+    "real": 3.49975,
+    "fake": 0.5833402783565297
+  },
+  "train_split": {
+    "real": 3.3323863636363638,
+    "fake": 0.5882647943831495
+  },
+  "label_map": {
+    "real": 0,
+    "fake": 1
+  },
+  "pos_weight_for_bce": 5.9995,
+  "description": "pos_weight_for_bce is used with BCEWithLogitsLoss(pos_weight=...) to upweight the minority class (real). Since label=1 means fake, and fake is the majority, we actually want to upweight real. For BCEWithLogitsLoss, pos_weight > 1 upweights the positive class (fake=1). Since real is the minority, we use the INVERSE: weight for label=1 (fake) should be < 1, equivalent to giving real higher weight. USE the class_weights_tensor in CrossEntropyLoss or the pos_weight in BCE."
+}
