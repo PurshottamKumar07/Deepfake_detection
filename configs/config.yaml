@@ -25,7 +25,10 @@ data:
   # Set to null to force reading from the DATA_ROOT environment variable.
   # Example local path (Windows):  C:/Users/Shubham/data/faceforensics
   # Example Colab path:            /content/drive/MyDrive/deepfake_dataset
-  data_root: null
+  # Set to the extracted-frames directory (output of extract_frames.py)
+  # Override with DATA_ROOT env var in Colab/different machines.
+  # Local: D:/Datasets/FF++/frames
+  data_root: "D:/Datasets/FF++/frames"
 
   # Sub-paths relative to data_root — adjust once dataset structure is known
   raw_dir: "data/raw"
@@ -36,16 +39,22 @@ data:
   # Dataset name tag written to manifest
   dataset_name: "faceforensics_plus_plus"
 
-  # Modality of this dataset (image | video | audio | mixed)
+  # Modality: frames extracted from videos → treated as images
   modality: "image"
 
-  # Classes that map to label=real
-  # Confirmed from FaceForensics++ C23 Kaggle dataset
-  real_classes: ["Original"]
+  # Binary classification: real/ and fake/ directories under data_root
+  # (produced by src.data.extract_frames)
+  real_classes: ["real"]
+  fake_classes: ["fake"]
 
-  # Classes that map to label=fake
-  # Confirmed from FaceForensics++ C23 Kaggle dataset
-  fake_classes: ["Deepfakes", "Face2Face", "FaceShifter", "FaceSwap", "NeuralTextures"]
+  # Path to class weights JSON (for handling 1:6 real:fake imbalance)
+  class_weights_path: "data/class_weights.json"
+
+  # Number of frames extracted per video (for reference)
+  frames_per_video: 10
+
+  # Original FF++ video root (used only by extract_frames.py)
+  video_root: "D:/Datasets/FF++/FaceForensics++_C23"
 
 # ---------------------------------------------------------------------------
 # Image settings

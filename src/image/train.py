@@ -327,8 +327,35 @@ def train_model(
     else:
         raise ValueError(f"Unknown optimizer: {optimizer_name}")
 
-    # Loss
-    criterion = nn.BCEWithLogitsLoss()
+    # Loss — with class weights for imbalanced datasets
+    # Loads pos_weight from data/class_weights.json if available.
+    # For FF++ (1K real, 6K fake → 10K real frames, 60K fake frames):
+    #   pos_weight < 1 downweights fake (the positive/majority class)
+    #   This is equivalent to upweighting real (the minority class).
+    pos_weight = None
+    class_weights_path = project_root / "data" / "class_weights.json"
+    if class_weights_path.exists():
+        try:
+            with open(class_weights_path, "r") as f:
+                import json as _json
+                cw = _json.load(f)
+            # pos_weight for BCEWithLogitsLoss: applied to the positive class (label=1 = fake)
+            # We want: weight_real / weight_fake as the pos_weight
+            # This effectively upweights real samples in the loss
+            pw_value = cw.get("overall", {}).get("fake", 1.0) / max(
+                cw.get("overall", {}).get("real", 1.0), 1e-6
+            )
+            pos_weight = torch.tensor([pw_value], device=device)
+            logger.info(
+                "Class weights loaded: real=%.4f, fake=%.4f, pos_weight=%.4f",
+                cw.get("overall", {}).get("real", 1.0),
+                cw.get("overall", {}).get("fake", 1.0),
+                pw_value,
+            )
+        except Exception as exc:
+            logger.warning("Failed to load class weights: %s. Using unweighted loss.", exc)
+
+    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
     # LR scheduler (reduce on plateau)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(

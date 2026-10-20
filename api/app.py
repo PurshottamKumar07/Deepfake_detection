@@ -124,16 +124,18 @@ async def detect(files: list[UploadFile] = File(...)) -> JSONResponse:
 # ---------------------------------------------------------------------------
 # Static file serving — mount AFTER API routes so /detect still works
 # ---------------------------------------------------------------------------
+FRONTEND_DIST = Path(__file__).resolve().parent.parent / "frontend_dist"
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
-if FRONTEND_DIR.exists():
-    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
-    logger.info("Frontend served from: %s", FRONTEND_DIR)
+STATIC_TARGET = FRONTEND_DIST if FRONTEND_DIST.exists() else FRONTEND_DIR
+
+if STATIC_TARGET.exists():
+    app.mount("/", StaticFiles(directory=str(STATIC_TARGET), html=True), name="frontend")
+    logger.info("Frontend served from: %s", STATIC_TARGET)
 else:
     logger.warning(
-        "Frontend directory not found at '%s'. "
-        "The API will still work, but the UI will not be served.",
-        FRONTEND_DIR,
+        "Neither frontend_dist nor frontend directory found. "
+        "The API will still work, but the UI will not be served."
     )
 
 
