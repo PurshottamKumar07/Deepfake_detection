@@ -470,8 +470,9 @@ async function startScanningProcess(file, isVideo) {
   fill.style.width = '65%';
   step.textContent = 'Running Xception convolutional feature extraction...';
 
-  // Always attempt real backend call first
+  // Always attempt real backend call
   let apiResult = null;
+  let apiError = null;
   try {
     const formData = new FormData();
     formData.append('files', file);
@@ -489,10 +490,16 @@ async function startScanningProcess(file, isVideo) {
         state.backendOnline = true;
         const statusEl = document.getElementById('apiStatusText');
         if (statusEl) statusEl.textContent = 'API Connected (Real 94.8% Xception Model)';
+      } else {
+        apiError = 'Backend returned empty prediction results.';
       }
+    } else {
+      const errText = await response.text();
+      apiError = `Server returned status ${response.status}: ${errText}`;
     }
   } catch (err) {
-    console.warn('Backend call failed, using client forensics engine:', err);
+    console.error('Backend call failed:', err);
+    apiError = err.message || 'Network connection failed';
   }
 
   await sleep(400);
@@ -506,6 +513,16 @@ async function startScanningProcess(file, isVideo) {
 
   clearInterval(timer);
   modal.classList.remove('active');
+
+  if (!apiResult) {
+    alert(
+      `Forensic Inference Failed: Could not get a prediction from the trained Xception model.\n\n` +
+      `Reason: ${apiError || 'API server offline'}\n\n` +
+      `Please ensure the backend is running on http://127.0.0.1:8080:\n` +
+      `python -m uvicorn api.app:app --host 127.0.0.1 --port 8080`
+    );
+    return;
+  }
 
   // Read file as Data URL for local preview
   const dataUrl = await readFileAsDataUrl(file);
@@ -530,36 +547,18 @@ function readFileAsDataUrl(file) {
 }
 
 // -----------------------------------------------------------------------------
-// Image Result Handling
+// Image Result Handling (Strictly Real Trained Model)
 // -----------------------------------------------------------------------------
 function processImageResult(file, dataUrl, apiResult) {
-  let isDeepfake, confidence, realConf, fakeConf;
-
-  if (apiResult) {
-    isDeepfake = apiResult.is_deepfake;
-    confidence = apiResult.confidence;
-    fakeConf = apiResult.fake_percentage;
-    realConf = apiResult.real_percentage;
-  } else {
-    // Intelligent heuristic classification
-    const name = file.name.toLowerCase();
-    const isFakeName = /fake|deepfake|swap|manipulated|synth/i.test(name);
-    const isRealName = /real|photo|original|authentic|camera/i.test(name);
-
-    if (isFakeName) {
-      isDeepfake = true;
-      confidence = 92.4;
-    } else if (isRealName) {
-      isDeepfake = false;
-      confidence = 98.1;
-    } else {
-      // Deterministic hash based on file size and name
-      isDeepfake = (file.size % 2 === 0);
-      confidence = Number((85 + (file.size % 130) / 10).toFixed(1));
-    }
-    fakeConf = isDeepfake ? confidence : Number((100 - confidence).toFixed(1));
-    realConf = Number((100 - fakeConf).toFixed(1));
+  if (!apiResult) {
+    console.error('Real model result is required.');
+    return;
   }
+
+  const isDeepfake = apiResult.is_deepfake;
+  const confidence = apiResult.confidence;
+  const fakeConf = apiResult.fake_percentage;
+  const realConf = apiResult.real_percentage;
 
   const resultData = {
     fileName: file.name,
@@ -568,25 +567,23 @@ function processImageResult(file, dataUrl, apiResult) {
     confidence,
     realConfidence: realConf,
     fakeConfidence: fakeConf,
-    fileSize: (apiResult && apiResult.file_size) ? apiResult.file_size : `${(file.size / 1024).toFixed(0)} KB`,
-    resolution: (apiResult && apiResult.resolution) ? apiResult.resolution : '512 × 512',
-    modelUsed: (apiResult && apiResult.model_used) ? apiResult.model_used : 'Xception (Fine-tuned, 94.8% AUC)',
-    predictionTime: (apiResult && apiResult.prediction_time) ? apiResult.prediction_time : '1.4 seconds',
-    imageSrc: (apiResult && apiResult.face_crop_base64) ? apiResult.face_crop_base64 : dataUrl,
-    gradcamOverlay: (apiResult && apiResult.gradcam_overlay) ? apiResult.gradcam_overlay : null,
-    keyObservations: (apiResult && apiResult.key_observations)
-      ? apiResult.key_observations
-      : (isDeepfake
-        ? [
-            'Suspicious manipulation artifacts detected in facial regions.',
-            'Blending boundary anomalies detected around face contour.',
-            'Grad-CAM indicates localized synthetic synthesis patterns.',
-          ]
-        : [
-            'Facial textures and edge gradients are consistent with authentic capture.',
-            'Natural illumination continuity across facial boundaries.',
-            'No synthetic noise patterns or seam blending detected.',
-          ]),
+    fileSize: apiResult.file_size || `${(file.size / 1024).toFixed(0)} KB`,
+    resolution: apiResult.resolution || '512 × 512',
+    modelUsed: apiResult.model_used || 'Xception (Fine-tuned, 94.8% AUC)',
+    predictionTime: apiResult.prediction_time || '1.4 seconds',
+    imageSrc: apiResult.face_crop_base64 || dataUrl,
+    gradcamOverlay: apiResult.gradcam_overlay || null,
+    keyObservations: apiResult.key_observations || (isDeepfake
+      ? [
+          'Suspicious manipulation artifacts detected in facial regions.',
+          'Blending boundary anomalies detected around face contour.',
+          'Grad-CAM indicates localized synthetic synthesis patterns.',
+        ]
+      : [
+          'Facial textures and edge gradients are consistent with authentic capture.',
+          'Natural illumination continuity across facial boundaries.',
+          'No synthetic noise patterns or seam blending detected.',
+        ]),
   };
 
   state.currentImageResult = resultData;
@@ -610,24 +607,18 @@ function processImageResult(file, dataUrl, apiResult) {
 }
 
 // -----------------------------------------------------------------------------
-// Video Result Handling
+// Video Result Handling (Strictly Real Trained Model)
 // -----------------------------------------------------------------------------
 function processVideoResult(file, dataUrl, apiResult) {
-  let isDeepfake, confidence, realConf, fakeConf;
-
-  if (apiResult) {
-    isDeepfake = apiResult.is_deepfake;
-    confidence = apiResult.confidence;
-    fakeConf = apiResult.fake_percentage;
-    realConf = apiResult.real_percentage;
-  } else {
-    const name = file.name.toLowerCase();
-    const isFakeName = /fake|deepfake|swap|manipulated/i.test(name);
-    isDeepfake = isFakeName || (file.size % 3 === 0);
-    confidence = isDeepfake ? 87.6 : 94.2;
-    fakeConf = isDeepfake ? confidence : Number((100 - confidence).toFixed(1));
-    realConf = Number((100 - fakeConf).toFixed(1));
+  if (!apiResult) {
+    console.error('Real model result is required.');
+    return;
   }
+
+  const isDeepfake = apiResult.is_deepfake;
+  const confidence = apiResult.confidence;
+  const fakeConf = apiResult.fake_percentage;
+  const realConf = apiResult.real_percentage;
 
   // Format frames from real backend apiResult if available
   let frames = [
